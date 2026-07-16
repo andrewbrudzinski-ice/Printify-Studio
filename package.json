@@ -9,6 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "tsx tests/pricing.test.ts",
+    "test:sql": "node tests/flow.integration.mjs",
     "db:reset": "supabase db reset",
     "db:push": "supabase db push"
   },
