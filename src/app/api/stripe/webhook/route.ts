@@ -6,14 +6,15 @@
 // The transition logic lives in src/lib/checkout/webhook.ts (tested); this
 // file verifies the signature, maps the Stripe event into the neutral shape,
 // and wires a Supabase-service-backed WebhookDb. Print generation + provider
-// handoff hang off the onPaid hook — not wired yet, so paid orders sit at
-// fulfilment_status='unsubmitted', the documented correct failure mode.
+// handoff run inline off the onPaid hook via src/lib/fulfilment/submit.ts.
 
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { supabaseService } from '@/lib/supabase/service';
 import { applyStripeEvent } from '@/lib/checkout/webhook';
 import type { StripeEventLike, WebhookDb, WebhookOrder } from '@/lib/checkout/webhook';
+import { fulfilOrder } from '@/lib/fulfilment/submit';
+import { makeFulfilmentDeps } from '@/lib/fulfilment/wire';
 
 export const runtime = 'nodejs';
 
@@ -45,7 +46,19 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ received: true, ignored: event.type });
   }
 
-  const outcome = await applyStripeEvent(makeDb(), mapped);
+  const outcome = await applyStripeEvent(makeDb(), mapped, {
+    // Fires exactly once per order (never on a replay — the state machine
+    // guarantees it). fulfilOrder settles the order to a terminal fulfilment
+    // state itself; nothing here may throw back at Stripe, or Stripe would
+    // retry a payment confirmation that already succeeded.
+    async onPaid(orderId) {
+      try {
+        await fulfilOrder(makeFulfilmentDeps(), orderId);
+      } catch (e) {
+        console.error(`fulfilment for order ${orderId} crashed:`, e);
+      }
+    },
+  });
   return NextResponse.json({ received: true, outcome });
 }
 
