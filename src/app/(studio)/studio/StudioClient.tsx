@@ -9,6 +9,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useArtwork } from '@/stores/artwork';
 import { templateAssetBaseUrl } from '@/lib/mockup/browserEnv';
 import { qualityByTemplate, type CatalogueTemplateDto, type TemplateQuality } from '@/lib/studio/grid';
@@ -172,7 +173,10 @@ function ProductTile({
     : null;
 
   return (
-    <div className="group overflow-hidden rounded-xl border border-neutral-200">
+    <Link
+      href={`/customize/${template.slug}`}
+      className="group block overflow-hidden rounded-xl border border-neutral-200 transition-shadow hover:shadow-md"
+    >
       <div className="relative aspect-square bg-neutral-200">
         {tile?.bitmap ? (
           <canvas ref={canvasRef} className="h-full w-full" />
@@ -200,6 +204,6 @@ function ProductTile({
           <span className="text-sm text-neutral-500">from ${(fromPrice / 100).toFixed(2)}</span>
         )}
       </div>
-    </div>
+    </Link>
   );
 }

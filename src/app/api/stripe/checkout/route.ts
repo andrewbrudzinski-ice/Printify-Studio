@@ -15,6 +15,7 @@ import Stripe from 'stripe';
 import { supabaseService } from '@/lib/supabase/service';
 import { buildCheckoutOrder, isCheckoutValidationError } from '@/lib/checkout/session';
 import type { CheckoutItemInput, VariantRow } from '@/lib/checkout/session';
+import { loadActiveDiscount } from '@/lib/checkout/discount';
 import type { BundleRule, Discount } from '@/lib/pricing/types';
 
 export const runtime = 'nodejs';
@@ -85,7 +86,9 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   let discount: Discount | null = null;
   if (body.discountCode) {
-    discount = await loadDiscount(db, body.discountCode);
+    // Same loader as /api/discount/validate — a code the cart accepted
+    // cannot be refused here, or vice versa.
+    discount = await loadActiveDiscount(db, body.discountCode);
     if (!discount) {
       return NextResponse.json(
         { error: 'That discount code is not valid. Check the spelling or remove it.' },
@@ -190,25 +193,4 @@ function toBundleRule(row: Record<string, unknown>): BundleRule {
     reward: { kind: reward.kind, value: reward.value },
     priority: Number(row.priority),
   };
-}
-
-async function loadDiscount(
-  db: ReturnType<typeof supabaseService>,
-  code: string,
-): Promise<Discount | null> {
-  const { data } = await db.from('discounts').select('*').eq('code', code).single();
-  if (!data) return null;
-  const d = data as {
-    code: string;
-    kind: 'percent' | 'fixed';
-    value: number;
-    active: boolean;
-    expires_at: string | null;
-    max_redemptions: number | null;
-    redemptions: number;
-  };
-  if (!d.active) return null;
-  if (d.expires_at && new Date(d.expires_at).getTime() < Date.now()) return null;
-  if (d.max_redemptions !== null && d.redemptions >= d.max_redemptions) return null;
-  return { code: d.code, kind: d.kind, value: d.value };
 }

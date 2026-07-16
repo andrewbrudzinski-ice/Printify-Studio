@@ -11,6 +11,7 @@
 // database — a price stored here could only ever be wrong or ignored.
 
 import { createStore } from 'zustand/vanilla';
+import { useStore } from 'zustand';
 import type { DesignSpec } from '../lib/mockup/types';
 
 export interface CartItem {
@@ -131,3 +132,7 @@ export function createCartStore() {
 
 // The app-wide cart. Tests construct their own.
 export const cartStore = createCartStore();
+
+export function useCart<T>(selector: (s: CartStore) => T): T {
+  return useStore(cartStore, selector);
+}
