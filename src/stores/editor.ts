@@ -13,23 +13,17 @@
 
 import { createStore } from 'zustand/vanilla';
 import { DEFAULT_SPEC, type DesignSpec } from '../lib/mockup/types';
+// Editor policy bounds live with the checkout spec schema — one definition,
+// so a value the editor can produce is always a value checkout accepts.
+// scale's lower bound is the one that matters: below cover-fit (1) the
+// artwork stops covering the print area and the PHYSICAL product prints
+// blank edges. The schema still re-validates — clamps are UX, not security.
+import { SPEC_LIMITS as LIMITS } from '../lib/mockup/spec';
 
 export interface SpecPatch {
   transform?: Partial<DesignSpec['transform']>;
   filters?: Partial<DesignSpec['filters']>;
 }
-
-// Editor policy bounds. scale's lower bound is the one that matters: below
-// cover-fit (1) the artwork stops covering the print area and the PHYSICAL
-// product prints blank edges. The rest keep slider values sane. The checkout
-// spec schema re-validates independently — these clamps are UX, not security.
-const LIMITS = {
-  scale: [1, 8],
-  pan: [-1, 1],
-  brightness: [0.2, 2],
-  contrast: [0.2, 2],
-  saturation: [0, 2],
-} as const;
 
 function clamp(v: number, [lo, hi]: readonly [number, number]): number {
   return v < lo ? lo : v > hi ? hi : v;
