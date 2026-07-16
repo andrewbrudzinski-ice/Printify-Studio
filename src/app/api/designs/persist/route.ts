@@ -10,6 +10,7 @@ import { NextResponse } from 'next/server';
 import { supabaseService } from '@/lib/supabase/service';
 import { supabaseRoute } from '@/lib/supabase/route';
 import { parseDesignSpec } from '@/lib/mockup/spec';
+import type { Database, Json } from '@/types/database';
 
 export const runtime = 'nodejs';
 
@@ -92,7 +93,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     }>).map((img) => [img.id, img]),
   );
 
-  const rows: Array<Record<string, unknown>> = [];
+  const rows: Database['public']['Tables']['designs']['Insert'][] = [];
   for (let i = 0; i < body.items.length; i++) {
     const item = body.items[i]!;
     const templateId = templateBySlug.get(item.templateSlug);
@@ -120,7 +121,10 @@ export async function POST(req: Request): Promise<NextResponse> {
       project_id: image.project_id,
       image_id: image.id,
       template_id: templateId,
-      spec: specs[i],
+      // A validated DesignSpec is JSON by construction (the schema enforces
+      // finite numbers and known keys); the cast bridges the interface to
+      // the structural Json type.
+      spec: specs[i] as unknown as Json,
     });
   }
 

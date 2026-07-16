@@ -10,6 +10,7 @@
 // anonymous carts. Everything else should use route.ts and let RLS work.
 import 'server-only';
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database';
 
 export function supabaseService() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -19,7 +20,7 @@ export function supabaseService() {
       'Supabase service role is not configured. Set SUPABASE_SERVICE_ROLE_KEY (server-side only, never NEXT_PUBLIC_*).',
     );
   }
-  return createClient(url, key, {
+  return createClient<Database>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }

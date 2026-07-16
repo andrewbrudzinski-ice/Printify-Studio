@@ -1,5 +1,6 @@
 // Browser client: anon key, RLS enforced. Safe to import anywhere.
 import { createBrowserClient } from '@supabase/ssr';
+import type { Database } from '@/types/database';
 
 export function supabaseBrowser() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -9,5 +10,5 @@ export function supabaseBrowser() {
       'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local.',
     );
   }
-  return createBrowserClient(url, key);
+  return createBrowserClient<Database>(url, key);
 }

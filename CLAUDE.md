@@ -18,10 +18,18 @@ have exercised it. See "What is NOT verified" below.
 ```bash
 npm install
 npm run typecheck   # tsc --noEmit
-npm test            # 199 assertions, 14 suites
+npm test            # 203 assertions, 15 suites
 npm run test:sql    # 49 checks against real Postgres (PGlite, no server)
 npm run build       # next build
 npm run bench       # render timings — informational, not a gate
+```
+
+For UI changes, also drive the funnel in a real browser (17 checks,
+screenshots, pixel-verified tiles):
+
+```bash
+npm run build && npm run start &
+npx tsx scripts/browser-pass.mts
 ```
 
 All of the above pass from a clean clone with no env vars set. If something
@@ -83,11 +91,13 @@ tests/                        every suite; read one before changing its subject
   token has exercised them. Any Printify mismatch is a bug in
   `src/lib/providers/printify/adapter.ts` alone — never a reason to change
   the `PrintProvider` interface.
-- **The UI in a real browser.** Client components compile (`next build`) and
-  the stores/renderer they bind to are tested, but no browser has rendered
-  them. Drag performance in particular: the Node/skia bench numbers exceed
-  the 16ms budget and are not representative — measure on OffscreenCanvas in
-  a browser before believing anything about drag frames.
+- **Drag frame timing.** The funnel HAS run in a real browser
+  (scripts/browser-pass.mts: 17 checks in Chromium — it caught a worker
+  init race and an editor stale-closure deadlock that no Node test could).
+  But the pass verifies behaviour, not frame budgets: the Node/skia bench
+  numbers exceed 16ms and are not representative. Measure drags on
+  OffscreenCanvas in a browser before believing anything about them.
+  Mobile Safari has seen nothing at all.
 
 Everything else was verified against PGlite, real canvas pixels and the real
 seed catalogue. The tests are a floor, not a guarantee.
@@ -112,23 +122,24 @@ seed catalogue. The tests are a floor, not a guarantee.
   `src/lib/checkout/mapping.ts` is the only way derived checkout arrays may
   meet; `tests/checkout-mapping.test.mts` pins both the rule and the old
   logic's wrongness.
-- **The DB clients are untyped.** `src/types/database.ts` doesn't exist yet;
-  generate it the moment you have a Supabase project:
-  `npx supabase gen types typescript --linked > src/types/database.ts`,
-  then thread it through `src/lib/supabase/*`. Until then the routes carry
-  explicit casts where the untyped client's join inference is wrong
-  (many-to-one `!inner` joins are typed as arrays but arrive as objects).
+- **The DB types are hand-written and will drift.** `src/types/database.ts`
+  mirrors schema.sql by hand so `tsc` is meaningful before a project exists.
+  Regenerate it the moment you have one:
+  `npx supabase gen types typescript --linked > src/types/database.ts`.
+  If you change schema.sql, change database.ts in the same commit.
 
 ## Known gaps, in the order to fix them
 
-1. **Mockup template art.** Every mockup renders the grey-base fallback. The
-   engine is done; it needs real product photography, masks and lighting
-   overlays in the public `templates` bucket. This is the only thing between
-   the code and a demo, and no amount of code changes it.
-2. **Generated DB types** — see landmines.
-3. **First live run**: Supabase project + Stripe test keys + a browser pass
-   over upload → grid → editor → cart → checkout. Expect small fixes in the
-   wiring, not the logic.
+1. **Real product photography.** Procedural placeholder art ships in
+   public/templates/ (regenerate: scripts/generate-template-art.mts), so
+   mockups composite full layer stacks — but placeholder is placeholder.
+   Swapping in real photography is a bucket upload, zero code, and it is
+   still the biggest lever on whether this feels premium.
+2. **Regenerate the DB types from a real project** — see landmines.
+3. **First LIVE-SERVICE run**: a Supabase project + Stripe test keys. The
+   browser pass already exists and passes against demo mode; point it at a
+   configured deployment and take checkout all the way to Stripe. Expect
+   small fixes in the wiring, not the logic.
 4. **Cutout model in a real browser.** See above.
 5. **Admin dashboard UI.** `POST /api/admin/orders/[id]/retry` exists and is
    guarded, but a held order currently needs a curl.

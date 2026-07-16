@@ -18,7 +18,7 @@ npx supabase link --project-ref <ref>
 npx supabase db push                # applies supabase/schema.sql + migrations
 npx supabase gen types typescript --linked > src/types/database.ts
 
-npm run typecheck && npm test       # 199 assertions, 14 suites
+npm run typecheck && npm test       # 203 assertions, 15 suites
 npm run test:sql                    # 49 checks against real Postgres (PGlite)
 npm run dev
 ```
@@ -99,8 +99,12 @@ tests/                          every suite; read one before changing its subjec
 
 ## Verification
 
-248 checks across 16 suites, all run against real Postgres (PGlite,
-in-process), real pixels (@napi-rs/canvas), and real encoders — not mocks:
+252 checks across 17 suites, all run against real Postgres (PGlite,
+in-process), real pixels (@napi-rs/canvas), and real encoders — not mocks —
+plus a 17-check Playwright pass that drives the built app in Chromium
+(scripts/browser-pass.mts): worker-rendered tiles pixel-verified, editor
+drag/undo through the real store, and the cart's bundle math checked to the
+cent through the real UI:
 
 - **Pricing (30)** — bundle greediness, overlapping bundles sharing one stock
   pool, discount-after-bundle ordering, tax on the post-discount amount only,
@@ -203,8 +207,9 @@ exercised. First contact will surface something. Any Printify mismatch is a
 bug in `src/lib/providers/printify/adapter.ts` alone — never a reason to
 change the `PrintProvider` interface.
 
-**Unverified in a real browser** — the client components compile and the
-logic they bind to is tested, but no browser has rendered them. Cutout model
+**Partially verified in a real browser** — the funnel (upload → grid →
+editor → cart) passes a 17-check Chromium pass in zero-env demo mode; live
+Stripe/Supabase and mobile browsers have seen nothing. Cutout model
 inference (`src/lib/cutout/ormbg.ts`) has NEVER been run: it was written where
 huggingface.co is unreachable. `npm install @huggingface/transformers`, run
 it, and expect to fix something. Before launch, self-host the weights
@@ -215,8 +220,9 @@ critical path of every customer's first cutout.
 is guarded; nothing calls it but curl), auth pages (Supabase handles the
 mechanics), marketing pages (the landing is a placeholder), server-side
 cutout (`/api/cutout` is a deliberate 501), Printful/Gelato/CustomCat
-adapters, generated DB types (`supabase gen types` the moment a project
-exists — the clients are currently untyped).
+adapters. The DB types (`src/types/database.ts`) are hand-written against
+schema.sql and will drift — regenerate with `supabase gen types` the moment
+a project exists.
 
 **Deliberately not attempted** — AR preview (a project, not a file); AI
 tagging/upscaling/generation (the schema carries `analysis` and `ai_tags` so
@@ -226,7 +232,8 @@ backfilling); order splitting across providers (an order needing two
 providers is held with an explanation — guessing per-shipment state before a
 real provider is connected is how you get a migration you regret).
 
-The single biggest lever on whether this feels premium is **mockup template
-art** — real product photography, masks and lighting overlays in the
-`templates` storage bucket. Everything renders grey-base fallbacks until
-then, and no amount of code changes it.
+The single biggest lever on whether this feels premium is **real product
+photography**. Procedural placeholder art ships in `public/templates/`
+(regenerate with `scripts/generate-template-art.mts`) so every mockup
+composites a full layer stack today; swapping in real photography, masks and
+lighting is a `templates`-bucket upload — zero code.

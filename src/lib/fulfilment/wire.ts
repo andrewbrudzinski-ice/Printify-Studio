@@ -117,7 +117,10 @@ export function makeFulfilmentDeps(): FulfilmentDeps {
     async setFulfilment(orderId, status, response) {
       await db
         .from('orders')
-        .update({ fulfilment_status: status, provider_response: response ?? null })
+        .update({
+          fulfilment_status: status,
+          provider_response: (response ?? null) as import('../../types/database').Json,
+        })
         .eq('id', orderId);
     },
 

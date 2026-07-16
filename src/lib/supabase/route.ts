@@ -4,6 +4,7 @@
 // admin operations), never for convenience.
 import { cookies } from 'next/headers';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import type { Database } from '@/types/database';
 
 export async function supabaseRoute() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -14,7 +15,7 @@ export async function supabaseRoute() {
     );
   }
   const store = await cookies();
-  return createServerClient(url, key, {
+  return createServerClient<Database>(url, key, {
     cookies: {
       getAll() {
         return store.getAll();
