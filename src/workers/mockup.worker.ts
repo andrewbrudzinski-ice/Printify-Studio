@@ -51,56 +51,69 @@ const scope = globalThis as unknown as {
 
 let env: RenderEnv | null = null;
 let artwork: SourceImage | null = null;
+// Render messages arrive the moment init is POSTED, not the moment the photo
+// finishes decoding. An async onmessage does not serialise message handling —
+// the first renders raced the awaited createImageBitmap and saw a null
+// artwork (found on the first real browser run, not by any Node test).
+// init records this promise; every render awaits it.
+let ready: Promise<void> | null = null;
 
-scope.onmessage = async (e) => {
+scope.onmessage = (e) => {
   const msg = e.data;
 
   if (msg.type === 'init') {
     env = createBrowserEnv(msg.assetBaseUrl);
-    const bitmap = await createImageBitmap(new Blob([msg.photo], { type: msg.mime }));
-    artwork = bitmap as unknown as SourceImage;
+    ready = createImageBitmap(new Blob([msg.photo], { type: msg.mime })).then((bitmap) => {
+      artwork = bitmap as unknown as SourceImage;
+    });
     return;
   }
 
   if (msg.type === 'render') {
-    if (!env || !artwork) {
-      scope.postMessage({ type: 'error', slug: msg.slug, message: 'Worker not initialised.' });
-      return;
-    }
-    try {
-      let degraded = false;
-      let result;
-      try {
-        result = await renderMockup({
-          env,
-          layers: msg.layers,
-          artwork,
-          spec: msg.spec,
-          width: msg.size,
-          height: msg.size,
-        });
-      } catch {
-        // Template art missing (or unreachable): render the artwork geometry
-        // alone. The tile shows the photo in the product's print area over a
-        // neutral background — engine working, art absent.
-        degraded = true;
-        result = await renderMockup({
-          env,
-          layers: fallbackLayers(msg.layers),
-          artwork,
-          spec: msg.spec,
-          width: msg.size,
-          height: msg.size,
-        });
-      }
-      const bitmap = (result.canvas as unknown as OffscreenCanvas).transferToImageBitmap();
-      scope.postMessage({ type: 'tile', slug: msg.slug, bitmap, degraded }, [bitmap]);
-    } catch (err) {
-      scope.postMessage({
-        type: 'error',
-        slug: msg.slug,
-        message: err instanceof Error ? err.message : String(err),
-      });
-    }
+    void handleRender(msg);
   }
 };
+
+async function handleRender(msg: RenderMessage): Promise<void> {
+  if (!ready) {
+    scope.postMessage({ type: 'error', slug: msg.slug, message: 'Worker not initialised.' });
+    return;
+  }
+  try {
+    await ready;
+    if (!env || !artwork) throw new Error('Photo failed to decode.');
+    let degraded = false;
+    let result;
+    try {
+      result = await renderMockup({
+        env,
+        layers: msg.layers,
+        artwork,
+        spec: msg.spec,
+        width: msg.size,
+        height: msg.size,
+      });
+    } catch {
+      // Template art missing (or unreachable): render the artwork geometry
+      // alone. The tile shows the photo in the product's print area over a
+      // neutral background — engine working, art absent.
+      degraded = true;
+      result = await renderMockup({
+        env,
+        layers: fallbackLayers(msg.layers),
+        artwork,
+        spec: msg.spec,
+        width: msg.size,
+        height: msg.size,
+      });
+    }
+    const bitmap = (result.canvas as unknown as OffscreenCanvas).transferToImageBitmap();
+    scope.postMessage({ type: 'tile', slug: msg.slug, bitmap, degraded }, [bitmap]);
+  } catch (err) {
+    scope.postMessage({
+      type: 'error',
+      slug: msg.slug,
+      message: err instanceof Error ? err.message : String(err),
+    });
+  }
+}

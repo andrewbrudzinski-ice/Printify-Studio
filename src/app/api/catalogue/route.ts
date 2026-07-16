@@ -7,12 +7,20 @@
 import { NextResponse } from 'next/server';
 import { supabaseRoute } from '@/lib/supabase/route';
 import type { CatalogueTemplateDto } from '@/lib/studio/grid';
+import demoCatalogue from '@/lib/studio/demoCatalogue.json';
 
 export const runtime = 'nodejs';
 
 export async function GET(): Promise<NextResponse> {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    return NextResponse.json({ error: 'Catalogue is not configured.' }, { status: 503 });
+    // Zero-env demo mode: serve the seed snapshot so the funnel works from a
+    // clean clone. The snapshot is generated FROM the seed (scripts/
+    // build-demo-catalogue.mts) and drift-guarded by tests/demo.test.mts —
+    // it is never a second source of truth.
+    return NextResponse.json(
+      { templates: demoCatalogue.templates as unknown as CatalogueTemplateDto[], demo: true },
+      { headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=300' } },
+    );
   }
 
   const db = await supabaseRoute();

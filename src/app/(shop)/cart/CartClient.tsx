@@ -173,7 +173,12 @@ export default function CartClient() {
   return (
     <main className="mx-auto grid max-w-4xl gap-10 px-6 py-10 lg:grid-cols-[1fr_300px]">
       <div>
-        <h1 className="mb-6 text-2xl font-bold tracking-tight">Your cart</h1>
+        <div className="mb-6 flex items-baseline justify-between">
+          <h1 className="text-2xl font-bold tracking-tight">Your cart</h1>
+          <Link href="/studio" className="text-sm text-neutral-500 underline">
+            Back to your products
+          </Link>
+        </div>
         <ul className="flex flex-col gap-4">
           {items.map((item) => (
             <li

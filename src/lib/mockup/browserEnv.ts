@@ -45,9 +45,11 @@ async function fetchAsset(base: string | null, src: string): Promise<SourceImage
 }
 
 // Public-bucket base URL for template art, derived from the Supabase URL the
-// client already has. Null when Supabase isn't configured — the grid then
-// renders its grey-base fallback everywhere, which is the correct zero-env demo.
-export function templateAssetBaseUrl(): string | null {
+// client already has. Without Supabase configured, fall back to the app's own
+// /templates path (public/templates/ in the repo) — placeholder art ships
+// there so the zero-env demo composites real layer stacks; anything missing
+// still degrades per-tile to the grey-base fallback.
+export function templateAssetBaseUrl(): string {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  return url ? `${url}/storage/v1/object/public/templates` : null;
+  return url ? `${url}/storage/v1/object/public/templates` : '/templates';
 }

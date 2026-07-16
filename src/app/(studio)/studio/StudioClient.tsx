@@ -75,6 +75,11 @@ export default function StudioClient() {
 
     worker.onmessage = (e: MessageEvent<TileResult | TileError>) => {
       const msg = e.data;
+      if (msg.type === 'error') {
+        // Loud, not silent: a tile that can't render is a bug to see, and
+        // the message is the only clue a bug report will carry.
+        console.error(`mockup render failed for ${msg.slug}: ${msg.message}`);
+      }
       setTiles((prev) => ({
         ...prev,
         [msg.slug]:
@@ -181,7 +186,10 @@ function ProductTile({
         {tile?.bitmap ? (
           <canvas ref={canvasRef} className="h-full w-full" />
         ) : tile?.error ? (
-          <div className="flex h-full items-center justify-center p-4 text-center text-xs text-neutral-500">
+          <div
+            title={tile.error}
+            className="flex h-full items-center justify-center p-4 text-center text-xs text-neutral-500"
+          >
             Preview unavailable
           </div>
         ) : (

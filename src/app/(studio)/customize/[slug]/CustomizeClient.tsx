@@ -32,6 +32,11 @@ export default function CustomizeClient({ slug }: { slug: string }) {
   const [template, setTemplate] = useState<CatalogueTemplateDto | null>(null);
   const [variantSku, setVariantSku] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
+  // State, not just a ref: the render effect must RE-RUN when the photo
+  // finishes decoding. Calling draw() from the decode callback captured a
+  // stale closure (a draw created before the template loaded) and the
+  // preview deadlocked unpainted — found on the first real browser run.
+  const [artworkReady, setArtworkReady] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const envRef = useRef<RenderEnv | null>(null);
@@ -79,14 +84,14 @@ export default function CustomizeClient({ slug }: { slug: string }) {
         return;
       }
       artRef.current = bmp as unknown as SourceImage;
-      void draw();
+      setArtworkReady(true);
     });
     return () => {
       closed = true;
       (artRef.current as ImageBitmap | null)?.close?.();
       artRef.current = null;
+      setArtworkReady(false);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file]);
 
   const draw = useCallback(async () => {
@@ -99,42 +104,49 @@ export default function CustomizeClient({ slug }: { slug: string }) {
     const size = draggingRef.current ? DRAG_SIZE : PREVIEW_SIZE;
     const currentSpec = editorStore.getState().spec;
 
-    let result;
     try {
-      result = await renderMockup({
-        env,
-        layers: template.mockupLayers,
-        artwork,
-        spec: currentSpec,
-        width: size,
-        height: size,
-      });
-    } catch {
-      // Template art missing — same grey-base fallback as the grid.
-      result = await renderMockup({
-        env,
-        layers: fallbackLayers(template.mockupLayers),
-        artwork,
-        spec: currentSpec,
-        width: size,
-        height: size,
-      });
-    }
-    if (seq !== renderSeq.current) return; // a newer frame superseded this one
+      let result;
+      try {
+        result = await renderMockup({
+          env,
+          layers: template.mockupLayers,
+          artwork,
+          spec: currentSpec,
+          width: size,
+          height: size,
+        });
+      } catch {
+        // Template art missing — same grey-base fallback as the grid.
+        result = await renderMockup({
+          env,
+          layers: fallbackLayers(template.mockupLayers),
+          artwork,
+          spec: currentSpec,
+          width: size,
+          height: size,
+        });
+      }
+      if (seq !== renderSeq.current) return; // a newer frame superseded this one
 
-    canvas.width = size;
-    canvas.height = size;
-    canvas
-      .getContext('2d')!
-      .drawImage(result.canvas as unknown as OffscreenCanvas, 0, 0);
+      canvas.width = size;
+      canvas.height = size;
+      canvas
+        .getContext('2d')!
+        .drawImage(result.canvas as unknown as OffscreenCanvas, 0, 0);
+    } catch (err) {
+      // A preview that silently fails to paint is the vanishing-stickers bug
+      // in a new hat. Loud, with the message a bug report needs.
+      console.error(`editor preview render failed: ${err instanceof Error ? err.message : err}`);
+    }
   }, [template]);
 
-  // Re-render on every spec change (previews included).
+  // Re-render on every spec change (previews included), and again the moment
+  // either the template or the decoded photo becomes available.
   useEffect(() => {
     const unsubscribe = editorStore.subscribe(() => void draw());
     void draw();
     return unsubscribe;
-  }, [draw]);
+  }, [draw, artworkReady]);
 
   if (!file) return null;
   if (notFound) {

@@ -6,12 +6,17 @@
 import { NextResponse } from 'next/server';
 import { supabaseRoute } from '@/lib/supabase/route';
 import type { BundleRule } from '@/lib/pricing/types';
+import demoCatalogue from '@/lib/studio/demoCatalogue.json';
 
 export const runtime = 'nodejs';
 
 export async function GET(): Promise<NextResponse> {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    return NextResponse.json({ error: 'Bundles are not configured.' }, { status: 503 });
+    // Zero-env demo mode — same seed snapshot as /api/catalogue.
+    return NextResponse.json(
+      { bundles: demoCatalogue.bundles as unknown as BundleRule[], demo: true },
+      { headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=300' } },
+    );
   }
 
   const db = await supabaseRoute();
