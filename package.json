@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx tests/pricing.test.ts && tsx tests/mockup.test.mts",
+    "test": "tsx tests/pricing.test.ts && tsx tests/mockup.test.mts && tsx tests/editor.test.mts && tsx tests/history.test.mts",
     "test:sql": "node tests/flow.integration.mjs",
     "db:reset": "supabase db reset",
     "db:push": "supabase db push"
@@ -28,7 +28,7 @@
     "stripe": "^17.5.0",
     "tailwind-merge": "^2.6.0",
     "zod": "^3.24.1",
-    "zustand": "^5.0.2"
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.2.17",
