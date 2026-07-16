@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx tests/pricing.test.ts && tsx tests/mockup.test.mts && tsx tests/editor.test.mts && tsx tests/history.test.mts && tsx tests/geometry.test.mts && tsx tests/print.test.mts && tsx tests/providers.test.mts && tsx tests/spec.test.mts && tsx tests/checkout-mapping.test.mts",
+    "test": "tsx tests/pricing.test.ts && tsx tests/mockup.test.mts && tsx tests/editor.test.mts && tsx tests/history.test.mts && tsx tests/geometry.test.mts && tsx tests/print.test.mts && tsx tests/providers.test.mts && tsx tests/spec.test.mts && tsx tests/checkout-mapping.test.mts && tsx tests/checkout.test.mts",
     "test:sql": "node tests/flow.integration.mjs && tsx tests/fulfilment.integration.mts",
     "db:reset": "supabase db reset",
     "db:push": "supabase db push"
@@ -25,6 +25,7 @@
     "next": "15.1.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "server-only": "^0.0.1",
     "stripe": "^17.5.0",
     "tailwind-merge": "^2.6.0",
     "zod": "^3.25.76",
