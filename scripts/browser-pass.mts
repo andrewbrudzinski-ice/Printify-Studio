@@ -6,13 +6,37 @@
 //
 //   npm run build && npm run start &
 //   npx tsx scripts/browser-pass.mts [screenshot-dir]
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { chromium, type Page } from 'playwright-core';
 import { createCanvas } from '@napi-rs/canvas';
 
 const BASE = process.env.PASS_BASE_URL ?? 'http://localhost:3000';
 const SHOT_DIR = process.argv[2] ?? 'browser-pass-shots';
-const EXECUTABLE = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+
+// CHROMIUM_PATH wins; otherwise playwright-core's own resolution; otherwise
+// scan the browser cache for ANY chromium revision. The last case matters in
+// containers that pre-provision a cache built for a different playwright-core
+// minor — executablePath() then names a revision that isn't on disk while a
+// perfectly good neighbour is.
+function resolveChromium(): string {
+  if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
+  const resolved = chromium.executablePath();
+  if (existsSync(resolved)) return resolved;
+  const root = process.env.PLAYWRIGHT_BROWSERS_PATH;
+  if (root && existsSync(root)) {
+    for (const dir of readdirSync(root)) {
+      if (!dir.startsWith('chromium-')) continue;
+      for (const candidate of [
+        `${root}/${dir}/chrome-linux/chrome`,
+        `${root}/${dir}/chrome-linux64/chrome`,
+      ]) {
+        if (existsSync(candidate)) return candidate;
+      }
+    }
+  }
+  return resolved; // let launch() report the real not-found error
+}
+const EXECUTABLE = resolveChromium();
 
 mkdirSync(SHOT_DIR, { recursive: true });
 
