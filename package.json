@@ -8,13 +8,13 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx tests/pricing.test.ts",
+    "test": "tsx tests/pricing.test.ts && tsx tests/mockup.test.mts",
     "test:sql": "node tests/flow.integration.mjs",
     "db:reset": "supabase db reset",
     "db:push": "supabase db push"
   },
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.65",
+    "@napi-rs/canvas": "^0.1.100",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
     "@tanstack/react-query": "^5.62.11",
