@@ -141,14 +141,17 @@ seed catalogue. The tests are a floor, not a guarantee.
    configured deployment and take checkout all the way to Stripe. Expect
    small fixes in the wiring, not the logic.
 4. **Cutout model in a real browser.** See above.
-5. **Admin dashboard UI.** `POST /api/admin/orders/[id]/retry` exists and is
-   guarded, but a held order currently needs a curl.
-6. **Auth pages.** Supabase handles the mechanics; the pages are unwritten
-   (`claim_anon_projects()` is ready for the signup flow).
-7. **Rate limiter is in-memory.** `/api/discount/validate` protection weakens
-   silently the moment this runs in more than one region/instance. Move to
-   Upstash behind the same `RateLimiter` interface.
-8. **Print generation runs inline in the webhook.** Fine for a normal basket
+5. **Live-run the auth + admin surfaces.** /admin/orders (held-order retry
+   is now a click) and /login /signup /reset exist and pass the demo-mode
+   browser checks, but no live Supabase session has exercised them.
+   claimAnonWork() runs after every successful sign-in — verify the
+   anonymous-work claim end to end with a real account.
+6. **Rate limiter sharing needs Upstash creds.** The Upstash adapter exists
+   behind the same RateLimiter interface (fails open on transport errors,
+   documented in src/lib/rateLimit.ts) and switches on automatically when
+   UPSTASH_REDIS_REST_URL/TOKEN are set; unverified against live Upstash.
+   Without them, limits stay per-instance.
+7. **Print generation runs inline in the webhook.** Fine for a normal basket
    (~80ms render + a few hundred ms encode per item). A 50-item order won't
    fit — that's the trigger for a queue, not a reason to build one now.
 
