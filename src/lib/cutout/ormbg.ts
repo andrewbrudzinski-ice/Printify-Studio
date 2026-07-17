@@ -60,6 +60,15 @@ let modulePromise: Promise<TransformersModule | null> | null = null;
 // deliberately: webpack resolves static import() specifiers at build time and
 // fails the build when the package is missing, which would make the optional
 // dependency not optional.
+//
+// KNOWN WRINKLE for the first real run: because the specifier is hidden from
+// the bundler, a BROWSER can't resolve it either — bare dynamic imports don't
+// work without a bundler-visible path or an import map, so isAvailable() is
+// currently false in browsers even with the package installed (the UI
+// correctly hides the button; pinned by the browser pass). Enabling the
+// feature for real means exposing the module to the browser: an import map
+// entry, or a conditional bundled entry point that exists only when the
+// package is installed. Solve that alongside the first inference run.
 function loadTransformers(): Promise<TransformersModule | null> {
   if (!modulePromise) {
     const name = ['@huggingface', 'transformers'].join('/');

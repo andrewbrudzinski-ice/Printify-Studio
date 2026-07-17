@@ -96,6 +96,15 @@ check('patched specs survive a JSON round-trip intact', () => {
   assert.deepEqual(JSON.parse(JSON.stringify(out)), out);
 });
 
+check('cutout toggles through a patch and survives unrelated patches', () => {
+  const on = applyPatch(spec(), { cutout: true });
+  assert.equal(on.cutout, true);
+  const stillOn = applyPatch(on, { transform: { x: 0.2 } });
+  assert.equal(stillOn.cutout, true, 'unrelated patches must not reset it');
+  const off = applyPatch(stillOn, { cutout: false });
+  assert.equal(off.cutout, false);
+});
+
 check('version is always 1 on output', () => {
   const out = applyPatch(spec(), { transform: { x: 0.1 } });
   assert.equal(out.version, 1);

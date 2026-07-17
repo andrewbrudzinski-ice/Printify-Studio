@@ -100,6 +100,19 @@ check('parseDesignSpec names the offending field for the 400 response', () => {
   assert.match((result as { error: string }).error, /transform\.scale/);
 });
 
+check('a legacy spec WITHOUT the cutout field parses, defaulting to false', () => {
+  const legacy = JSON.parse(JSON.stringify(DEFAULT_SPEC)) as Record<string, unknown>;
+  delete legacy.cutout;
+  const parsed = designSpecSchema.parse(legacy);
+  assert.equal(parsed.cutout, false, 'absence must mean false, not rejection');
+});
+
+check('cutout accepts booleans and rejects everything else', () => {
+  assert.equal(designSpecSchema.parse({ ...structuredClone(DEFAULT_SPEC), cutout: true }).cutout, true);
+  assert.equal(designSpecSchema.safeParse({ ...structuredClone(DEFAULT_SPEC), cutout: 'yes' }).success, false);
+  assert.equal(designSpecSchema.safeParse({ ...structuredClone(DEFAULT_SPEC), cutout: 1 }).success, false);
+});
+
 check('parseDesignSpec returns the typed spec on success', () => {
   const result = parseDesignSpec(structuredClone(DEFAULT_SPEC));
   assert.equal(result.ok, true);

@@ -17,6 +17,10 @@ import { artworkStore, useArtwork } from '@/stores/artwork';
 import { createBrowserEnv, templateAssetBaseUrl } from '@/lib/mockup/browserEnv';
 import { renderMockup } from '@/lib/mockup/renderer';
 import { fallbackLayers, type CatalogueTemplateDto } from '@/lib/studio/grid';
+import { ormbgProvider } from '@/lib/cutout/ormbg';
+import { runCutout } from '@/lib/cutout/run';
+import { isCutoutQualityError } from '@/lib/cutout/types';
+import { uploadImage } from '@/lib/studio/upload';
 import type { RenderEnv, SourceImage } from '@/lib/mockup/types';
 
 const PREVIEW_SIZE = 640;
@@ -37,6 +41,12 @@ export default function CustomizeClient({ slug }: { slug: string }) {
   // stale closure (a draw created before the template loaded) and the
   // preview deadlocked unpainted — found on the first real browser run.
   const [artworkReady, setArtworkReady] = useState(false);
+  // Cutout availability decides whether the button exists at all — an
+  // optional dependency that isn't installed must leave no trace in the UI.
+  const [cutoutAvailable, setCutoutAvailable] = useState(false);
+  const cutout = useArtwork((s) => s.cutout);
+  const useCut = useStore(editorStore, (s) => s.spec.cutout);
+  const cutRef = useRef<SourceImage | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const envRef = useRef<RenderEnv | null>(null);
@@ -49,6 +59,42 @@ export default function CustomizeClient({ slug }: { slug: string }) {
   useEffect(() => {
     if (!file) router.replace('/upload');
   }, [file, router]);
+
+  // Show the cutout button only if the model package is actually loadable.
+  useEffect(() => {
+    let cancelled = false;
+    void ormbgProvider.isAvailable().then((ok) => {
+      if (!cancelled) setCutoutAvailable(ok);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Decode the cut image for rendering whenever one exists.
+  const [cutReady, setCutReady] = useState(false);
+  useEffect(() => {
+    if (!cutout.file) {
+      cutRef.current = null;
+      setCutReady(false);
+      return;
+    }
+    let closed = false;
+    void createImageBitmap(cutout.file).then((bmp) => {
+      if (closed) {
+        bmp.close();
+        return;
+      }
+      cutRef.current = bmp as unknown as SourceImage;
+      setCutReady(true);
+    });
+    return () => {
+      closed = true;
+      (cutRef.current as ImageBitmap | null)?.close?.();
+      cutRef.current = null;
+      setCutReady(false);
+    };
+  }, [cutout.file]);
 
   // Fresh spec per product visit — a mug's crop doesn't belong on a poster.
   useEffect(() => {
@@ -97,12 +143,14 @@ export default function CustomizeClient({ slug }: { slug: string }) {
   const draw = useCallback(async () => {
     const canvas = canvasRef.current;
     const env = envRef.current;
-    const artwork = artRef.current;
+    const currentSpec = editorStore.getState().spec;
+    // spec.cutout selects which bitmap renders; if the cut version isn't
+    // decoded yet, fall back to the original rather than painting nothing.
+    const artwork = (currentSpec.cutout && cutRef.current) || artRef.current;
     if (!canvas || !env || !artwork || !template) return;
 
     const seq = ++renderSeq.current;
     const size = draggingRef.current ? DRAG_SIZE : PREVIEW_SIZE;
-    const currentSpec = editorStore.getState().spec;
 
     try {
       let result;
@@ -141,12 +189,45 @@ export default function CustomizeClient({ slug }: { slug: string }) {
   }, [template]);
 
   // Re-render on every spec change (previews included), and again the moment
-  // either the template or the decoded photo becomes available.
+  // the template, the decoded photo, or the decoded cutout becomes available.
   useEffect(() => {
     const unsubscribe = editorStore.subscribe(() => void draw());
     void draw();
     return unsubscribe;
-  }, [draw, artworkReady]);
+  }, [draw, artworkReady, cutReady]);
+
+  async function cutOutSubject() {
+    if (!file) return;
+    const store = artworkStore.getState();
+    store.setCutout({ status: 'running', error: null });
+    try {
+      const run = await runCutout(ormbgProvider, file);
+      const cutFile = new File([run.blob], 'cutout.png', { type: 'image/png' });
+      store.setCutout({
+        status: 'done',
+        file: cutFile,
+        objectUrl: URL.createObjectURL(run.blob),
+      });
+      editorStore.getState().apply({ cutout: true });
+
+      // Upload the cut image in the background, exactly like the original —
+      // it becomes its own image row, and designs that use it just point at
+      // a different image_id. Failure is state, not an exception; checkout
+      // blocks with an actionable message if it never lands.
+      void uploadImage(run.blob as File, run.width, run.height)
+        .then(({ imageId }) => artworkStore.getState().setCutout({ imageId }))
+        .catch(() => undefined);
+    } catch (e) {
+      // The quality gate's message tells the user what to do INSTEAD; any
+      // other failure gets a generic retry line.
+      store.setCutout({
+        status: 'error',
+        error: isCutoutQualityError(e)
+          ? (e as Error).message
+          : 'Background removal failed. Try again in a moment.',
+      });
+    }
+  }
 
   if (!file) return null;
   if (notFound) {
@@ -232,6 +313,27 @@ export default function CustomizeClient({ slug }: { slug: string }) {
           <ToolButton label="Redo" disabled={!canRedo} onClick={() => editorStore.getState().redo()} />
           <ToolButton label="Reset" onClick={() => editorStore.getState().reset()} />
         </section>
+
+        {cutoutAvailable && (
+          <section className="flex flex-col gap-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+              Subject
+            </h2>
+            {cutout.status === 'done' ? (
+              <ToolButton
+                label={useCut ? 'Show original photo' : 'Use the cut-out subject'}
+                onClick={() => editorStore.getState().apply({ cutout: !useCut })}
+              />
+            ) : (
+              <ToolButton
+                label={cutout.status === 'running' ? 'Cutting…' : 'Cut out the subject'}
+                disabled={cutout.status === 'running'}
+                onClick={() => void cutOutSubject()}
+              />
+            )}
+            {cutout.error && <p className="text-sm text-amber-700">{cutout.error}</p>}
+          </section>
+        )}
 
         <section className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">Adjust</h2>

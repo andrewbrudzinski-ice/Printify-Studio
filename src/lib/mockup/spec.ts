@@ -45,6 +45,9 @@ export const designSpecSchema = z
         saturation: z.number().finite().min(SPEC_LIMITS.saturation[0]).max(SPEC_LIMITS.saturation[1]),
       })
       .strict(),
+    // Added after v1 specs existed in the wild: absence means false, so every
+    // previously persisted spec stays valid without a version bump.
+    cutout: z.boolean().default(false),
   })
   .strict();
 

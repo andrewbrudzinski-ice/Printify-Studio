@@ -93,7 +93,7 @@ export default function CartClient() {
 
   async function checkout() {
     setError(null);
-    const upload = artworkStore.getState().upload;
+    const { upload, cutout } = artworkStore.getState();
     if (upload.status !== 'done' || !upload.imageId) {
       setError(
         upload.status === 'error'
@@ -102,18 +102,30 @@ export default function CartClient() {
       );
       return;
     }
+    const current = cartStore.getState().items;
+    // Items whose spec uses the cutout must point at the CUT image's row —
+    // the print pipeline renders whatever image the design references, and a
+    // cutout design referencing the original would print the uncut photo.
+    const needsCutout = current.some((i) => i.spec.cutout);
+    if (needsCutout && !cutout.imageId) {
+      setError(
+        cutout.status === 'error' || cutout.status === 'none'
+          ? 'Your cut-out failed to save. Re-run “Cut out the subject” in the editor and try again.'
+          : 'Your cut-out is still uploading — give it a few seconds and try again.',
+      );
+      return;
+    }
 
     setCheckingOut(true);
     try {
       // 1. Local cart items become real design rows; ids come back in the
       //    SAME ORDER as the items were posted.
-      const current = cartStore.getState().items;
       const persistRes = await fetch('/api/designs/persist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items: current.map((i) => ({
-            imageId: upload.imageId,
+            imageId: i.spec.cutout ? cutout.imageId : upload.imageId,
             templateSlug: i.templateSlug,
             spec: i.spec,
           })),

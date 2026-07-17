@@ -23,12 +23,33 @@ export interface ArtworkStore {
     error: string | null;
   };
 
+  // The background-removed variant of the photo, once computed. The cut PNG
+  // is uploaded as its OWN image row (same flow as the original), so designs
+  // that use it just point at a different image_id — the print path never
+  // special-cases cutouts.
+  cutout: {
+    status: 'none' | 'running' | 'done' | 'error';
+    // Local preview source for the cut image.
+    file: File | null;
+    objectUrl: string | null;
+    imageId: string | null;
+    error: string | null;
+  };
+
   setPhoto(input: { file: File; width: number; height: number; objectUrl: string }): void;
   setUpload(patch: Partial<ArtworkStore['upload']>): void;
+  setCutout(patch: Partial<ArtworkStore['cutout']>): void;
   reset(): void;
 }
 
 const EMPTY_UPLOAD = { status: 'idle' as UploadStatus, imageId: null, path: null, error: null };
+const EMPTY_CUTOUT = {
+  status: 'none' as const,
+  file: null,
+  objectUrl: null,
+  imageId: null,
+  error: null,
+};
 
 export const artworkStore = createStore<ArtworkStore>()((set, get) => ({
   file: null,
@@ -36,21 +57,38 @@ export const artworkStore = createStore<ArtworkStore>()((set, get) => ({
   height: 0,
   objectUrl: null,
   upload: { ...EMPTY_UPLOAD },
+  cutout: { ...EMPTY_CUTOUT },
 
   setPhoto({ file, width, height, objectUrl }) {
     const previous = get().objectUrl;
     if (previous) URL.revokeObjectURL(previous);
-    set({ file, width, height, objectUrl, upload: { ...EMPTY_UPLOAD } });
+    const previousCut = get().cutout.objectUrl;
+    if (previousCut) URL.revokeObjectURL(previousCut);
+    // A new photo invalidates any cutout of the old one.
+    set({ file, width, height, objectUrl, upload: { ...EMPTY_UPLOAD }, cutout: { ...EMPTY_CUTOUT } });
   },
 
   setUpload(patch) {
     set({ upload: { ...get().upload, ...patch } });
   },
 
+  setCutout(patch) {
+    set({ cutout: { ...get().cutout, ...patch } });
+  },
+
   reset() {
     const previous = get().objectUrl;
     if (previous) URL.revokeObjectURL(previous);
-    set({ file: null, width: 0, height: 0, objectUrl: null, upload: { ...EMPTY_UPLOAD } });
+    const previousCut = get().cutout.objectUrl;
+    if (previousCut) URL.revokeObjectURL(previousCut);
+    set({
+      file: null,
+      width: 0,
+      height: 0,
+      objectUrl: null,
+      upload: { ...EMPTY_UPLOAD },
+      cutout: { ...EMPTY_CUTOUT },
+    });
   },
 }));
 

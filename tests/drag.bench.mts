@@ -38,6 +38,7 @@ const dragSpec: DesignSpec = {
   version: 1,
   transform: { x: 0.12, y: -0.08, scale: 1.6, rotation: 0 },
   filters: { brightness: 1, contrast: 1, saturation: 1 },
+  cutout: false,
 };
 
 const DRAG_SIZE = 320;
