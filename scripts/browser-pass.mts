@@ -206,6 +206,15 @@ try {
   );
   await shot(page, 'cart-checkout-blocked');
 
+  // --- 7. Admin dashboard explains itself in demo mode ---------------------
+  await page.goto(`${BASE}/admin/orders`, { waitUntil: 'networkidle' });
+  const adminText = (await page.textContent('body'))!;
+  ok(
+    'admin orders page renders its unconfigured state without crashing',
+    adminText.includes('Orders') && /aren't configured|Sign in/i.test(adminText),
+  );
+  await shot(page, 'admin-orders');
+
   // --- Console hygiene ------------------------------------------------------
   ok(
     'no unexpected console errors across the whole pass',
