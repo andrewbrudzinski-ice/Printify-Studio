@@ -206,6 +206,28 @@ try {
   );
   await shot(page, 'cart-checkout-blocked');
 
+  // --- 7. Auth pages render and degrade honestly in demo mode --------------
+  await page.goto(`${BASE}/login`, { waitUntil: 'networkidle' });
+  ok('login page renders its form', (await page.textContent('h1'))!.includes('Sign in'));
+  await page.fill('input[type="email"]', 'demo@example.com');
+  await page.fill('input[type="password"]', 'password123');
+  await page.click('button[type="submit"]');
+  await page.waitForTimeout(600);
+  ok(
+    'demo-mode sign-in explains itself instead of crashing',
+    (await page.textContent('body'))!.includes('not available on this demo deployment'),
+  );
+  await shot(page, 'login-demo');
+
+  // --- 8. Admin dashboard explains itself in demo mode ---------------------
+  await page.goto(`${BASE}/admin/orders`, { waitUntil: 'networkidle' });
+  const adminText = (await page.textContent('body'))!;
+  ok(
+    'admin orders page renders its unconfigured state without crashing',
+    adminText.includes('Orders') && /aren't configured|Sign in/i.test(adminText),
+  );
+  await shot(page, 'admin-orders');
+
   // --- Console hygiene ------------------------------------------------------
   ok(
     'no unexpected console errors across the whole pass',

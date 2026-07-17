@@ -216,11 +216,12 @@ it, and expect to fix something. Before launch, self-host the weights
 (`NEXT_PUBLIC_MODEL_BASE_URL`) — the default puts a third-party CDN in the
 critical path of every customer's first cutout.
 
-**Scaffolded, not built** — admin dashboard UI (the retry endpoint exists and
-is guarded; nothing calls it but curl), auth pages (Supabase handles the
-mechanics), marketing pages (the landing is a placeholder), server-side
-cutout (`/api/cutout` is a deliberate 501), Printful/Gelato/CustomCat
-adapters. The DB types (`src/types/database.ts`) are hand-written against
+**Scaffolded, not built** — marketing pages (the landing is a placeholder),
+server-side cutout (`/api/cutout` is a deliberate 501), and the
+Printful/Gelato/CustomCat adapters. The admin dashboard (/admin/orders,
+held-order retry as a click) and auth pages (/login /signup /reset, with
+anonymous-work claiming on sign-in) are built and pass demo-mode browser
+checks, but no live Supabase session has exercised them. The DB types (`src/types/database.ts`) are hand-written against
 schema.sql and will drift — regenerate with `supabase gen types` the moment
 a project exists.
 
