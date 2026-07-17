@@ -1,0 +1,833 @@
+{
+  "generatedFrom": "supabase/migrations/0002_seed_templates.sql",
+  "templates": [
+    {
+      "slug": "phone-case",
+      "name": "Phone Case",
+      "description": "Slim polycarbonate case with an edge-to-edge print.",
+      "config": {
+        "print": {
+          "minDpi": 100,
+          "safeIn": 0.125,
+          "bleedIn": 0.125,
+          "widthIn": 3,
+          "heightIn": 6
+        },
+        "requiresCutout": false
+      },
+      "mockupLayers": [
+        {
+          "src": "phone-case/bg.jpg",
+          "type": "IMAGE"
+        },
+        {
+          "rect": {
+            "h": 0.76,
+            "w": 0.36,
+            "x": 0.32,
+            "y": 0.12
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "src": "phone-case/mask.png",
+          "type": "MASK"
+        },
+        {
+          "src": "phone-case/camera.png",
+          "type": "IMAGE"
+        },
+        {
+          "src": "phone-case/gloss.png",
+          "type": "OVERLAY",
+          "blend": "multiply"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "PHN-IP15",
+          "name": "iPhone 15",
+          "price": 2499,
+          "config": null
+        },
+        {
+          "sku": "PHN-IP15P",
+          "name": "iPhone 15 Pro",
+          "price": 2499,
+          "config": null
+        }
+      ]
+    },
+    {
+      "slug": "mug",
+      "name": "Mug",
+      "description": "Ceramic mug, dishwasher safe, wrap-around print.",
+      "config": {
+        "print": {
+          "minDpi": 100,
+          "safeIn": 0.125,
+          "bleedIn": 0.125,
+          "widthIn": 8.5,
+          "heightIn": 3.5
+        },
+        "requiresCutout": false
+      },
+      "mockupLayers": [
+        {
+          "src": "mug/bg.jpg",
+          "type": "IMAGE"
+        },
+        {
+          "mesh": {
+            "cols": 4,
+            "rows": 2,
+            "points": [
+              [
+                0.28,
+                0.32
+              ],
+              [
+                0.39,
+                0.3
+              ],
+              [
+                0.5,
+                0.295
+              ],
+              [
+                0.61,
+                0.3
+              ],
+              [
+                0.72,
+                0.32
+              ],
+              [
+                0.28,
+                0.53
+              ],
+              [
+                0.39,
+                0.525
+              ],
+              [
+                0.5,
+                0.52
+              ],
+              [
+                0.61,
+                0.525
+              ],
+              [
+                0.72,
+                0.53
+              ],
+              [
+                0.28,
+                0.72
+              ],
+              [
+                0.39,
+                0.745
+              ],
+              [
+                0.5,
+                0.75
+              ],
+              [
+                0.61,
+                0.745
+              ],
+              [
+                0.72,
+                0.72
+              ]
+            ]
+          },
+          "rect": {
+            "h": 0.45,
+            "w": 0.44,
+            "x": 0.28,
+            "y": 0.3
+          },
+          "type": "MESH_WARP"
+        },
+        {
+          "src": "mug/shadow.png",
+          "type": "SHADOW"
+        },
+        {
+          "src": "mug/gloss.png",
+          "type": "OVERLAY",
+          "blend": "multiply"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "MUG-11-WHT",
+          "name": "11 oz — White",
+          "price": 1499,
+          "config": null
+        },
+        {
+          "sku": "MUG-15-WHT",
+          "name": "15 oz — White",
+          "price": 1799,
+          "config": null
+        }
+      ]
+    },
+    {
+      "slug": "tshirt",
+      "name": "T-Shirt",
+      "description": "Heavyweight cotton tee, front print.",
+      "config": {
+        "print": {
+          "minDpi": 100,
+          "safeIn": 0.5,
+          "bleedIn": 0,
+          "widthIn": 12,
+          "heightIn": 16
+        },
+        "requiresCutout": false
+      },
+      "mockupLayers": [
+        {
+          "src": "tshirt/bg.jpg",
+          "type": "IMAGE"
+        },
+        {
+          "rect": {
+            "h": 0.42,
+            "w": 0.32,
+            "x": 0.34,
+            "y": 0.24
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "src": "tshirt/fabric.png",
+          "type": "OVERLAY",
+          "blend": "multiply"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "TEE-BLK-L",
+          "name": "Black — L",
+          "price": 2199,
+          "config": null
+        },
+        {
+          "sku": "TEE-BLK-M",
+          "name": "Black — M",
+          "price": 2199,
+          "config": null
+        },
+        {
+          "sku": "TEE-BLK-S",
+          "name": "Black — S",
+          "price": 2199,
+          "config": null
+        }
+      ]
+    },
+    {
+      "slug": "tote-bag",
+      "name": "Tote Bag",
+      "description": "Natural canvas tote, single-side print.",
+      "config": {
+        "print": {
+          "minDpi": 100,
+          "safeIn": 0.5,
+          "bleedIn": 0,
+          "widthIn": 14,
+          "heightIn": 14
+        },
+        "requiresCutout": false
+      },
+      "mockupLayers": [
+        {
+          "src": "tote-bag/bg.jpg",
+          "type": "IMAGE"
+        },
+        {
+          "rect": {
+            "h": 0.4,
+            "w": 0.4,
+            "x": 0.3,
+            "y": 0.34
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "src": "tote-bag/weave.png",
+          "type": "OVERLAY",
+          "blend": "multiply"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "TOTE-STD",
+          "name": "Natural canvas",
+          "price": 1899,
+          "config": null
+        }
+      ]
+    },
+    {
+      "slug": "poster",
+      "name": "Poster",
+      "description": "Matte poster on 200gsm stock.",
+      "config": {
+        "print": {
+          "minDpi": 100,
+          "safeIn": 0.25,
+          "bleedIn": 0.125,
+          "widthIn": 12,
+          "heightIn": 18
+        },
+        "requiresCutout": false
+      },
+      "mockupLayers": [
+        {
+          "src": "poster/bg.jpg",
+          "type": "IMAGE"
+        },
+        {
+          "rect": {
+            "h": 0.72,
+            "w": 0.4,
+            "x": 0.3,
+            "y": 0.14
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "src": "poster/light.png",
+          "type": "OVERLAY",
+          "blend": "multiply"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "PSTR-12x18",
+          "name": "12 x 18 in",
+          "price": 1299,
+          "config": {
+            "print": {
+              "widthIn": 12,
+              "heightIn": 18
+            }
+          }
+        },
+        {
+          "sku": "PSTR-18x24",
+          "name": "18 x 24 in",
+          "price": 1999,
+          "config": {
+            "print": {
+              "widthIn": 18,
+              "heightIn": 24
+            }
+          }
+        }
+      ]
+    },
+    {
+      "slug": "canvas-print",
+      "name": "Canvas Print",
+      "description": "Gallery-wrapped canvas, 1.25in bars.",
+      "config": {
+        "print": {
+          "minDpi": 100,
+          "safeIn": 0.5,
+          "bleedIn": 1.25,
+          "widthIn": 16,
+          "heightIn": 20
+        },
+        "requiresCutout": false
+      },
+      "mockupLayers": [
+        {
+          "src": "canvas-print/bg.jpg",
+          "type": "IMAGE"
+        },
+        {
+          "rect": {
+            "h": 0.66,
+            "w": 0.44,
+            "x": 0.28,
+            "y": 0.16
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "src": "canvas-print/texture.png",
+          "type": "OVERLAY",
+          "blend": "multiply"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "CNVS-12x12",
+          "name": "12 x 12 in",
+          "price": 3999,
+          "config": {
+            "print": {
+              "widthIn": 12,
+              "heightIn": 12
+            }
+          }
+        },
+        {
+          "sku": "CNVS-16x20",
+          "name": "16 x 20 in",
+          "price": 5999,
+          "config": {
+            "print": {
+              "widthIn": 16,
+              "heightIn": 20
+            }
+          }
+        }
+      ]
+    },
+    {
+      "slug": "keychain",
+      "name": "Acrylic Keychain",
+      "description": "Die-cut acrylic keychain of your subject.",
+      "config": {
+        "print": {
+          "minDpi": 100,
+          "safeIn": 0.0625,
+          "bleedIn": 0.0625,
+          "widthIn": 2,
+          "heightIn": 2
+        },
+        "requiresCutout": true
+      },
+      "mockupLayers": [
+        {
+          "src": "keychain/bg.jpg",
+          "type": "IMAGE"
+        },
+        {
+          "rect": {
+            "h": 0.24,
+            "w": 0.24,
+            "x": 0.38,
+            "y": 0.34
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "src": "keychain/mask.png",
+          "type": "MASK"
+        },
+        {
+          "src": "keychain/shadow.png",
+          "type": "SHADOW"
+        },
+        {
+          "src": "keychain/gloss.png",
+          "type": "OVERLAY",
+          "blend": "screen"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "KEY-ACR",
+          "name": "Acrylic",
+          "price": 999,
+          "config": null
+        }
+      ]
+    },
+    {
+      "slug": "sticker-sheet",
+      "name": "Sticker Sheet",
+      "description": "Kiss-cut vinyl sticker sheet.",
+      "config": {
+        "print": {
+          "minDpi": 100,
+          "safeIn": 0.125,
+          "bleedIn": 0.0625,
+          "widthIn": 5.5,
+          "heightIn": 8.5
+        },
+        "requiresCutout": true
+      },
+      "mockupLayers": [
+        {
+          "src": "sticker-sheet/bg.jpg",
+          "type": "IMAGE"
+        },
+        {
+          "rect": {
+            "h": 0.62,
+            "w": 0.4,
+            "x": 0.3,
+            "y": 0.16
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "src": "sticker-sheet/mask.png",
+          "type": "MASK"
+        },
+        {
+          "src": "sticker-sheet/sheen.png",
+          "type": "OVERLAY",
+          "blend": "screen"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "STK-SHEET",
+          "name": "5.5 x 8.5 in sheet",
+          "price": 799,
+          "config": null
+        }
+      ]
+    },
+    {
+      "slug": "photo-stamps",
+      "name": "Photo Stamps",
+      "description": "A sheet of 16 photo stamps.",
+      "config": {
+        "print": {
+          "minDpi": 100,
+          "safeIn": 0.125,
+          "bleedIn": 0.125,
+          "widthIn": 8,
+          "heightIn": 10
+        },
+        "requiresCutout": false
+      },
+      "mockupLayers": [
+        {
+          "src": "photo-stamps/bg.jpg",
+          "type": "IMAGE"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.06,
+            "y": 0.06
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.29,
+            "y": 0.06
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.52,
+            "y": 0.06
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.75,
+            "y": 0.06
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.06,
+            "y": 0.29
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.29,
+            "y": 0.29
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.52,
+            "y": 0.29
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.75,
+            "y": 0.29
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.06,
+            "y": 0.52
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.29,
+            "y": 0.52
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.52,
+            "y": 0.52
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.75,
+            "y": 0.52
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.06,
+            "y": 0.75
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.29,
+            "y": 0.75
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.52,
+            "y": 0.75
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "rect": {
+            "h": 0.2,
+            "w": 0.2,
+            "x": 0.75,
+            "y": 0.75
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "src": "photo-stamps/perforation.png",
+          "type": "OVERLAY",
+          "blend": "multiply"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "STMP-16",
+          "name": "Sheet of 16",
+          "price": 1599,
+          "config": null
+        }
+      ]
+    },
+    {
+      "slug": "mousepad",
+      "name": "Mousepad",
+      "description": "Smooth-surface mousepad with stitched edge.",
+      "config": {
+        "print": {
+          "minDpi": 100,
+          "safeIn": 0.25,
+          "bleedIn": 0.125,
+          "widthIn": 9.25,
+          "heightIn": 7.75
+        },
+        "requiresCutout": false
+      },
+      "mockupLayers": [
+        {
+          "src": "mousepad/bg.jpg",
+          "type": "IMAGE"
+        },
+        {
+          "rect": {
+            "h": 0.4,
+            "w": 0.48,
+            "x": 0.26,
+            "y": 0.3
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "src": "mousepad/light.png",
+          "type": "OVERLAY",
+          "blend": "multiply"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "PAD-STD",
+          "name": "9.25 x 7.75 in",
+          "price": 1499,
+          "config": null
+        }
+      ]
+    },
+    {
+      "slug": "coaster",
+      "name": "Coaster Set",
+      "description": "Set of two cork-backed coasters.",
+      "config": {
+        "print": {
+          "minDpi": 100,
+          "safeIn": 0.125,
+          "bleedIn": 0.0625,
+          "widthIn": 4,
+          "heightIn": 4
+        },
+        "requiresCutout": false
+      },
+      "mockupLayers": [
+        {
+          "src": "coaster/bg.jpg",
+          "type": "IMAGE"
+        },
+        {
+          "rect": {
+            "h": 0.28,
+            "w": 0.28,
+            "x": 0.36,
+            "y": 0.36
+          },
+          "type": "ARTWORK"
+        },
+        {
+          "src": "coaster/mask.png",
+          "type": "MASK"
+        },
+        {
+          "src": "coaster/light.png",
+          "type": "OVERLAY",
+          "blend": "multiply"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "CSTR-2PK",
+          "name": "Set of 2",
+          "price": 1299,
+          "config": null
+        }
+      ]
+    }
+  ],
+  "bundles": [
+    {
+      "id": "wall-art-trio",
+      "skus": [
+        "PSTR-12x18",
+        "PSTR-18x24",
+        "CNVS-12x12",
+        "CNVS-16x20"
+      ],
+      "quantity": 3,
+      "reward": {
+        "kind": "percent",
+        "value": 20
+      },
+      "priority": 60
+    },
+    {
+      "id": "tee-three",
+      "skus": [
+        "TEE-BLK-S",
+        "TEE-BLK-M",
+        "TEE-BLK-L"
+      ],
+      "quantity": 3,
+      "reward": {
+        "kind": "percent",
+        "value": 25
+      },
+      "priority": 55
+    },
+    {
+      "id": "mug-pair",
+      "skus": [
+        "MUG-11-WHT",
+        "MUG-15-WHT"
+      ],
+      "quantity": 2,
+      "reward": {
+        "kind": "percent",
+        "value": 15
+      },
+      "priority": 50
+    },
+    {
+      "id": "sticker-stack",
+      "skus": [
+        "STK-SHEET"
+      ],
+      "quantity": 3,
+      "reward": {
+        "kind": "fixed",
+        "value": 400
+      },
+      "priority": 40
+    },
+    {
+      "id": "desk-set",
+      "skus": [
+        "PAD-STD",
+        "CSTR-2PK",
+        "MUG-11-WHT"
+      ],
+      "quantity": 3,
+      "reward": {
+        "kind": "percent",
+        "value": 10
+      },
+      "priority": 30
+    }
+  ]
+}

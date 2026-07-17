@@ -1,0 +1,71 @@
+# CI: the same commands CLAUDE.md says to run before touching anything.
+# Everything here passes from a clean clone with NO secrets — that property
+# is load-bearing (see README), so no job in this file may require one.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  # The gate: typecheck, every unit suite (real pixels, real encoders),
+  # the SQL suite (real Postgres via PGlite), and the production build.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run test:sql
+      - run: npm run build
+
+  # The funnel in a real browser: upload -> grid -> editor -> cart against
+  # the production build in zero-env demo mode. This pass caught two bugs no
+  # Node test could (worker init race, editor stale-closure deadlock) — it is
+  # a gate, not decoration. Screenshots are uploaded as an artifact either way.
+  browser-pass:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium (version-matched to playwright-core)
+        run: npx --yes playwright@$(node -p "require('playwright-core/package.json').version") install --with-deps chromium
+      - run: npm run build
+      - name: Run the funnel pass
+        run: |
+          npm run start &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/ > /dev/null && break
+            sleep 1
+          done
+          npx tsx scripts/browser-pass.mts browser-pass-shots
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-pass-screenshots
+          path: browser-pass-shots
+
+  # Render timings — informational, not a gate (CI hardware variance would
+  # make timing assertions flaky; the only hard assertion inside is the
+  # 10-second full-grid promise, which holds with ~18x headroom).
+  bench:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run bench
