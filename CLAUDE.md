@@ -18,13 +18,13 @@ have exercised it. See "What is NOT verified" below.
 ```bash
 npm install
 npm run typecheck   # tsc --noEmit
-npm test            # 203 assertions, 15 suites
+npm test            # 221 assertions, 16 suites
 npm run test:sql    # 49 checks against real Postgres (PGlite, no server)
 npm run build       # next build
 npm run bench       # render timings — informational, not a gate
 ```
 
-For UI changes, also drive the funnel in a real browser (17 checks,
+For UI changes, also drive the funnel in a real browser (21 checks,
 screenshots, pixel-verified tiles):
 
 ```bash
@@ -78,14 +78,18 @@ tests/                        every suite; read one before changing its subject
 ## What is NOT verified
 
 - **Cutout model inference** (`src/lib/cutout/ormbg.ts`) has never been run.
-  Everything downstream — haze removal, islands, feathering, the quality
-  gate — is tested against real pixels (22 checks). The inference call was
-  written against the documented Transformers.js API in an environment that
-  couldn't reach huggingface.co. Run it in a browser and expect to fix
-  something. The build passes without `@huggingface/transformers` installed:
-  the module name is assembled at runtime so webpack can't resolve it
-  statically, and `isAvailable()` hides the feature rather than crashing.
-  That's deliberate — keep it that way.
+  The UI is now fully wired — the editor's "cut out the subject" button,
+  spec.cutout (additive, legacy specs default false), the cut image uploaded
+  as its own project_images row so the print path needs no special case —
+  and everything downstream of the model (refinement, the alpha fuse, the
+  quality gate) is tested against real pixels (25 checks). The inference
+  call itself was written where huggingface.co is unreachable. One known
+  wrinkle documented in ormbg.ts: the runtime-assembled module name that
+  keeps the optionalDependency build-safe also hides it from browsers (bare
+  dynamic imports don't resolve), so isAvailable() is false in browsers even
+  when installed and the button stays hidden — pinned by the browser pass.
+  The first real run must expose the module via an import map or a
+  conditional bundled entry, then expect to fix something in the call.
 - **Live service wiring.** Stripe session creation, Supabase storage
   up/downloads, and the Printify adapter follow documented APIs; no live
   token has exercised them. Any Printify mismatch is a bug in

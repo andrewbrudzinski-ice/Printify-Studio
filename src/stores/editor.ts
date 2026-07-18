@@ -23,6 +23,7 @@ import { SPEC_LIMITS as LIMITS } from '../lib/mockup/spec';
 export interface SpecPatch {
   transform?: Partial<DesignSpec['transform']>;
   filters?: Partial<DesignSpec['filters']>;
+  cutout?: boolean;
 }
 
 function clamp(v: number, [lo, hi]: readonly [number, number]): number {
@@ -59,6 +60,7 @@ export function applyPatch(spec: DesignSpec, patch: SpecPatch): DesignSpec {
       contrast: clamp(finiteOr(f.contrast, spec.filters.contrast), LIMITS.contrast),
       saturation: clamp(finiteOr(f.saturation, spec.filters.saturation), LIMITS.saturation),
     },
+    cutout: typeof patch.cutout === 'boolean' ? patch.cutout : spec.cutout,
   };
 }
 

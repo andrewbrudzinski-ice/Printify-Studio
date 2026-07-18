@@ -255,4 +255,56 @@ check('refineMask: an all-foreground mask is rejected as a would-be rectangle', 
   assert.throws(() => refineMask(m), (e: unknown) => isCutoutQualityError(e));
 });
 
+// --- Fusing the mask onto the photo -------------------------------------------
+
+check('applyCutoutAlpha: mask becomes the alpha channel, colours untouched', async () => {
+  const { applyCutoutAlpha } = await import('../src/lib/cutout/apply');
+  const w = 4;
+  const h = 1;
+  const image = { data: new Uint8ClampedArray(w * h * 4), width: w, height: h };
+  for (let i = 0; i < w; i++) {
+    image.data.set([10 * (i + 1), 20, 30, 255], i * 4);
+  }
+  const cut = {
+    alpha: new Uint8ClampedArray([255, 128, 0, 255]),
+    width: w,
+    height: h,
+    bbox: { x: 0, y: 0, w, h },
+    coverage: 0.75,
+  };
+  const out = applyCutoutAlpha(image, cut);
+  assert.deepEqual([...out.slice(0, 4)], [10, 20, 30, 255], 'kept pixel');
+  assert.equal(out[7], 128, 'partial edge alpha carried through');
+  assert.equal(out[11], 0, 'dropped pixel fully transparent');
+  assert.equal(out[4], 20, 'colour channels untouched');
+  assert.equal(image.data[11], 255, 'input not mutated');
+});
+
+check('applyCutoutAlpha: combines with existing photo alpha instead of replacing it', async () => {
+  const { applyCutoutAlpha } = await import('../src/lib/cutout/apply');
+  const image = { data: new Uint8ClampedArray([0, 0, 0, 128]), width: 1, height: 1 };
+  const cut = {
+    alpha: new Uint8ClampedArray([255]),
+    width: 1,
+    height: 1,
+    bbox: { x: 0, y: 0, w: 1, h: 1 },
+    coverage: 1,
+  };
+  const out = applyCutoutAlpha(image, cut);
+  assert.equal(out[3], 128, 'a half-transparent source pixel stays half-transparent');
+});
+
+check('applyCutoutAlpha: dimension mismatch throws — never a cutout of the wrong pixels', async () => {
+  const { applyCutoutAlpha } = await import('../src/lib/cutout/apply');
+  const image = { data: new Uint8ClampedArray(16), width: 2, height: 2 };
+  const cut = {
+    alpha: new Uint8ClampedArray(9),
+    width: 3,
+    height: 3,
+    bbox: { x: 0, y: 0, w: 3, h: 3 },
+    coverage: 1,
+  };
+  assert.throws(() => applyCutoutAlpha(image, cut), /same pixels/);
+});
+
 console.log(`\n${count} checks passed against real synthetic masks.`);

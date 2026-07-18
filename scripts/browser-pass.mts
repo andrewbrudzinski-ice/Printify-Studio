@@ -145,6 +145,13 @@ try {
   await page.waitForTimeout(1200);
   let editor = await paintedCanvases(page);
   ok('editor preview painted', editor.painted >= 1);
+  // The optional cutout dependency isn't loadable in this browser (bare
+  // dynamic imports don't resolve without a bundler-visible path), so the
+  // feature must leave NO trace — no button, no error, nothing.
+  ok(
+    'cutout button hidden when the model package is unavailable',
+    !(await page.textContent('body'))!.includes('Cut out the subject'),
+  );
   await shot(page, 'editor-initial');
 
   // Drag on the preview: pointer down -> move -> up. This walks the

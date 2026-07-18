@@ -114,6 +114,7 @@ function spec(overrides: Partial<DesignSpec['transform']> = {}, filters: Partial
     version: 1,
     transform: { ...DEFAULT_SPEC.transform, ...overrides },
     filters: { ...DEFAULT_SPEC.filters, ...filters },
+    cutout: false,
   };
 }
 

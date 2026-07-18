@@ -63,12 +63,18 @@ export interface DesignSpec {
     contrast: number; // 1 = neutral
     saturation: number; // 1 = neutral, 0 = greyscale
   };
+  // True = the design uses the background-removed version of the photo. The
+  // cut image is a REAL uploaded image (its own project_images row) by the
+  // time checkout persists the design, so the print path needs no special
+  // case — this flag only selects which bitmap previews client-side.
+  cutout: boolean;
 }
 
 export const DEFAULT_SPEC: DesignSpec = {
   version: 1,
   transform: { x: 0, y: 0, scale: 1, rotation: 0 },
   filters: { brightness: 1, contrast: 1, saturation: 1 },
+  cutout: false,
 };
 
 // ---------------------------------------------------------------------------

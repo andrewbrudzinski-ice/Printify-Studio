@@ -7,8 +7,8 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { artworkStore, anonToken } from '@/stores/artwork';
-import { supabaseBrowser } from '@/lib/supabase/client';
+import { artworkStore } from '@/stores/artwork';
+import { uploadImage } from '@/lib/studio/upload';
 
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
 
@@ -120,31 +120,7 @@ async function uploadInBackground(file: File, width: number, height: number): Pr
       useWebWorker: true,
     });
 
-    const res = await fetch('/api/upload/sign', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        width,
-        height,
-        contentType: compressed.type || file.type,
-        anonToken: anonToken(),
-      }),
-    });
-    if (!res.ok) {
-      const body = (await res.json().catch(() => ({}))) as { error?: string };
-      throw new Error(body.error ?? `Upload signing failed (HTTP ${res.status}).`);
-    }
-    const { imageId, path, token } = (await res.json()) as {
-      imageId: string;
-      path: string;
-      token: string;
-    };
-
-    const { error } = await supabaseBrowser()
-      .storage.from('uploads')
-      .uploadToSignedUrl(path, token, compressed);
-    if (error) throw new Error(error.message);
-
+    const { imageId, path } = await uploadImage(compressed, width, height);
     artworkStore.getState().setUpload({ status: 'done', imageId, path });
   } catch (e) {
     artworkStore.getState().setUpload({
